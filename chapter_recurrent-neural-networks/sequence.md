@@ -10,7 +10,7 @@ Imagine that you are watching movies on Netflix. As a good Netflix user, you dec
 * In some cases, movies become unpopular due to the misbehaviors of directors or actors in the production.
 * Some movies become cult movies, because they were almost comically bad. *Plan 9 from Outer Space* and *Troll 2* achieved a high degree of notoriety for this reason.
 
-In short, movie ratings are anything but stationary. Thus, using temporal dynamics 
+In short, movie ratings are anything but stationary. Thus, using temporal dynamics
 led to more accurate movie recommendations :cite:`Koren.2009`.
 Of course, sequence data are not just about movie ratings. The following gives more illustrations.
 
@@ -48,7 +48,7 @@ First, assume that the potentially rather long sequence $x_{t-1}, \ldots, x_1$ i
 In this case we might content ourselves with some timespan of length $\tau$ and only use $x_{t-1}, \ldots, x_{t-\tau}$ observations. The immediate benefit is that now the number of arguments is always the same, at least for $t > \tau$. This allows us to train a deep network as indicated above. Such models will be called *autoregressive models*, as they quite literally perform regression on themselves.
 
 The second strategy, shown in :numref:`fig_sequence-model`, is to keep some summary $h_t$ of the past observations, and at the same time update $h_t$ in addition to the prediction $\hat{x}_t$.
-This leads to models that estimate $x_t$ with $\hat{x}_t = P(x_t \mid h_{t})$ and moreover updates of the form  $h_t = g(h_{t-1}, x_{t-1})$. Since $h_t$ is never observed, these models are also called *latent autoregressive models*. 
+This leads to models that estimate $x_t$ with $\hat{x}_t = P(x_t \mid h_{t})$ and moreover updates of the form  $h_t = g(h_{t-1}, x_{t-1})$. Since $h_t$ is never observed, these models are also called *latent autoregressive models*.
 
 ![A latent autoregressive model.](../img/sequence-model.svg)
 :label:`fig_sequence-model`
@@ -69,7 +69,7 @@ $$P(x_1, \ldots, x_T) = \prod_{t=1}^T P(x_t \mid x_{t-1}) \text{ where } P(x_1 \
 Such models are particularly nice whenever $x_t$ assumes only a discrete value, since in this case dynamic programming can be used to compute values along the chain exactly. For instance, we can compute $P(x_{t+1} \mid x_{t-1})$ efficiently:
 
 $$\begin{aligned}
-P(x_{t+1} \mid x_{t-1}) 
+P(x_{t+1} \mid x_{t-1})
 &= \frac{\sum_{x_t} P(x_{t+1}, x_t, x_{t-1})}{P(x_{t-1})}\\
 &= \frac{\sum_{x_t} P(x_{t+1} \mid x_t, x_{t-1}) P(x_t, x_{t-1})}{P(x_{t-1})}\\
 &= \sum_{x_t} P(x_{t+1} \mid x_t) P(x_t \mid x_{t-1})
@@ -111,7 +111,7 @@ npx.set_np()
 %matplotlib inline
 from d2l import torch as d2l
 import torch
-import torch.nn as nn
+from torch import nn
 ```
 
 ```{.python .input}
@@ -172,7 +172,7 @@ train_iter = d2l.load_array((features[:n_train], labels[:n_train]),
 ```
 
 Here we keep the architecture fairly simple:
-just an MLP with two fully-connected layers, ReLU activation, and square loss.
+just an MLP with two fully-connected layers, ReLU activation, and squared loss.
 
 ```{.python .input}
 # A simple MLP
@@ -192,7 +192,7 @@ loss = gluon.loss.L2Loss()
 # Function for initializing the weights of the network
 def init_weights(m):
     if type(m) == nn.Linear:
-        torch.nn.init.xavier_uniform_(m.weight)
+        nn.init.xavier_uniform_(m.weight)
 
 # A simple MLP
 def get_net():
@@ -287,8 +287,7 @@ namely the *one-step-ahead prediction*.
 #@tab all
 onestep_preds = net(features)
 d2l.plot([time, time[tau:]], [d2l.numpy(x), d2l.numpy(onestep_preds)], 'time',
-         'x', legend=['data', '1-step preds'], xlim=[1, 1000],
-         figsize=(6, 3))
+         'x', legend=['data', '1-step preds'], xlim=[1, 1000], figsize=(6, 3))
 ```
 
 The one-step-ahead predictions look nice, just as we expected.
@@ -306,7 +305,7 @@ $$
 \ldots
 $$
 
-Generally, for an observed sequence up to $x_t$, its predicted output $\hat{x}_{t+k}$ at time step $t+k$ is called the *$k$-step-ahead prediction*. Since we have observed up to $x_{604}$, its $k$-step-ahead prediction is $\hat{x}_{604+k}$.
+Generally, for an observed sequence up to $x_t$, its predicted output $\hat{x}_{t+k}$ at time step $t+k$ is called the $k$*-step-ahead prediction*. Since we have observed up to $x_{604}$, its $k$-step-ahead prediction is $\hat{x}_{604+k}$.
 In other words, we will have to use our own predictions to make multistep-ahead predictions.
 Let us see how well this goes.
 
@@ -315,8 +314,8 @@ Let us see how well this goes.
 multistep_preds = d2l.zeros(T)
 multistep_preds[: n_train + tau] = x[: n_train + tau]
 for i in range(n_train + tau, T):
-    multistep_preds[i] = d2l.reshape(net(
-        multistep_preds[i - tau: i].reshape(1, -1)), 1)
+    multistep_preds[i] = net(
+        d2l.reshape(multistep_preds[i - tau: i], (1, -1)))
 ```
 
 ```{.python .input}
@@ -357,7 +356,7 @@ features = d2l.zeros((T - tau - max_steps + 1, tau + max_steps))
 # Column `i` (`i` < `tau`) are observations from `x` for time steps from
 # `i + 1` to `i + T - tau - max_steps + 1`
 for i in range(tau):
-    features[:, i] = x[i: i + T - tau - max_steps + 1].T
+    features[:, i] = x[i: i + T - tau - max_steps + 1]
 
 # Column `i` (`i` >= `tau`) are the (`i - tau + 1`)-step-ahead predictions for
 # time steps from `i + 1` to `i + T - tau - max_steps + 1`
@@ -371,7 +370,7 @@ features = tf.Variable(d2l.zeros((T - tau - max_steps + 1, tau + max_steps)))
 # Column `i` (`i` < `tau`) are observations from `x` for time steps from
 # `i + 1` to `i + T - tau - max_steps + 1`
 for i in range(tau):
-    features[:, i].assign(x[i: i + T - tau - max_steps + 1].numpy().T)
+    features[:, i].assign(x[i: i + T - tau - max_steps + 1].numpy())
 
 # Column `i` (`i` >= `tau`) are the (`i - tau + 1`)-step-ahead predictions for
 # time steps from `i + 1` to `i + T - tau - max_steps + 1`
@@ -397,7 +396,7 @@ While the 4-step-ahead predictions still look good, anything beyond that is almo
 * There is quite a difference in difficulty between interpolation and extrapolation. Consequently, if you have a sequence, always respect the temporal order of the data when training, i.e., never train on future data.
 * Sequence models require specialized statistical tools for estimation. Two popular choices are autoregressive models and latent-variable autoregressive models.
 * For causal models (e.g., time going forward), estimating the forward direction is typically a lot easier than the reverse direction.
-* For an observed sequence up to time step $t$, its predicted output at time step $t+k$ is the *$k$-step-ahead prediction*. As we predict further in time by increasing $k$, the errors accumulate and the quality of the prediction degrades, often dramatically.
+* For an observed sequence up to time step $t$, its predicted output at time step $t+k$ is the $k$*-step-ahead prediction*. As we predict further in time by increasing $k$, the errors accumulate and the quality of the prediction degrades, often dramatically.
 
 
 ## Exercises

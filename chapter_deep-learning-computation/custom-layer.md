@@ -15,7 +15,7 @@ a layer that does not exist yet in the deep learning framework.
 In these cases, you must build a custom layer.
 In this section, we show you how.
 
-## Layers without Parameters
+## (**Layers without Parameters**)
 
 To start, we construct a custom layer
 that does not have any parameters of its own.
@@ -27,7 +27,7 @@ To build it, we simply need to inherit
 from the base layer class and implement the forward propagation function.
 
 ```{.python .input}
-from mxnet import gluon, np, npx
+from mxnet import np, npx
 from mxnet.gluon import nn
 npx.set_np()
 
@@ -43,7 +43,7 @@ class CenteredLayer(nn.Block):
 #@tab pytorch
 import torch
 from torch import nn
-import torch.nn.functional as F
+from torch.nn import functional as F
 
 class CenteredLayer(nn.Module):
     def __init__(self):
@@ -84,8 +84,8 @@ layer = CenteredLayer()
 layer(tf.constant([1, 2, 3, 4, 5]))
 ```
 
-We can now incorporate our layer as a component
-in constructing more complex models.
+We can now [**incorporate our layer as a component
+in constructing more complex models.**]
 
 ```{.python .input}
 net = nn.Sequential()
@@ -126,7 +126,7 @@ Y = net(tf.random.uniform((4, 8)))
 tf.reduce_mean(Y)
 ```
 
-## Layers with Parameters
+## [**Layers with Parameters**]
 
 Now that we know how to define simple layers,
 let us move on to defining layers with parameters
@@ -211,7 +211,7 @@ dense(tf.random.uniform((2, 5)))
 dense.get_weights()
 ```
 
-We can directly carry out forward propagation calculations using custom layers.
+We can [**directly carry out forward propagation calculations using custom layers.**]
 
 ```{.python .input}
 dense.initialize()
@@ -228,7 +228,7 @@ dense(torch.rand(2, 5))
 dense(tf.random.uniform((2, 5)))
 ```
 
-We can also construct models using custom layers.
+We can also (**construct models using custom layers.**)
 Once we have that we can use it just like the built-in fully-connected layer.
 
 ```{.python .input}
@@ -263,7 +263,6 @@ net(tf.random.uniform((2, 64)))
 1. Design a layer that takes an input and computes a tensor reduction,
    i.e., it returns $y_k = \sum_{i, j} W_{ijk} x_i x_j$.
 1. Design a layer that returns the leading half of the Fourier coefficients of the data.
-
 
 :begin_tab:`mxnet`
 [Discussions](https://discuss.d2l.ai/t/58)

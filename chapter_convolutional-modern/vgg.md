@@ -42,9 +42,18 @@ and $2 \times 2$ max pooling with stride of 2
 (halving the resolution after each block).
 In the code below, we define a function called `vgg_block`
 to implement one VGG block.
+
+:begin_tab:`mxnet,tensorflow`
 The function takes two arguments
 corresponding to the number of convolutional layers `num_convs`
 and the number of output channels `num_channels`.
+:end_tab:
+
+:begin_tab:`pytorch`
+The function takes three arguments corresponding to the number
+of convolutional layers `num_convs`, the number of input channels `in_channels`
+and the number of output channels `out_channels`.
+:end_tab:
 
 ```{.python .input}
 from d2l import mxnet as d2l
@@ -68,7 +77,7 @@ import torch
 from torch import nn
 
 def vgg_block(num_convs, in_channels, out_channels):
-    layers=[]
+    layers = []
     for _ in range(num_convs):
         layers.append(nn.Conv2d(in_channels, out_channels,
                                 kernel_size=3, padding=1))
@@ -148,9 +157,9 @@ net = vgg(conv_arch)
 ```{.python .input}
 #@tab pytorch
 def vgg(conv_arch):
+    conv_blks = []
+    in_channels = 1
     # The convolutional part
-    conv_blks=[]
-    in_channels=1
     for (num_convs, out_channels) in conv_arch:
         conv_blks.append(vgg_block(num_convs, in_channels, out_channels))
         in_channels = out_channels
@@ -247,7 +256,7 @@ the model training process is similar to that of AlexNet in :numref:`sec_alexnet
 #@tab all
 lr, num_epochs, batch_size = 0.05, 10, 128
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size, resize=224)
-d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ## Summary

@@ -335,7 +335,7 @@ net.add(b1, b2, b3, b4, b5, nn.Dense(10))
 #@tab pytorch
 b5 = nn.Sequential(Inception(832, 256, (160, 320), (32, 128), 128),
                    Inception(832, 384, (192, 384), (48, 128), 128),
-                   nn.AdaptiveMaxPool2d((1,1)),
+                   nn.AdaptiveAvgPool2d((1,1)),
                    nn.Flatten())
 
 net = nn.Sequential(b1, b2, b3, b4, b5, nn.Linear(1024, 10))
@@ -400,7 +400,7 @@ As before, we train our model using the Fashion-MNIST dataset.
 #@tab all
 lr, num_epochs, batch_size = 0.1, 10, 128
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size, resize=96)
-d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ## Summary

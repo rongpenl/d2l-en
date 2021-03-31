@@ -333,9 +333,9 @@ when deep learning practitioners talk to statisticians.
 
 When training our models, we typically want to process
 whole minibatches of examples simultaneously.
-Doing this efficiently requires that we vectorize the calculations
+Doing this efficiently requires that (**we**) (~~should~~) (**vectorize the calculations
 and leverage fast linear algebra libraries
-rather than writing costly for-loops in Python.
+rather than writing costly for-loops in Python.**)
 
 ```{.python .input}
 %matplotlib inline
@@ -366,7 +366,7 @@ import time
 ```
 
 To illustrate why this matters so much,
-we can consider two methods for adding vectors.
+we can (**consider two methods for adding vectors.**)
 To start we instantiate two 10000-dimensional vectors
 containing all ones.
 In one method we will loop over the vectors with a Python for-loop.
@@ -380,7 +380,7 @@ b = d2l.ones(n)
 ```
 
 Since we will benchmark the running time frequently in this book,
-let us define a timer.
+[**let us define a timer**].
 
 ```{.python .input}
 #@tab all
@@ -413,8 +413,8 @@ class Timer:  #@save
 ```
 
 Now we can benchmark the workloads.
-First, we add them, one coordinate at a time,
-using a for-loop.
+First, [**we add them, one coordinate at a time,
+using a for-loop.**]
 
 ```{.python .input}
 #@tab mxnet, pytorch
@@ -434,7 +434,7 @@ for i in range(n):
 f'{timer.stop():.5f} sec'
 ```
 
-Alternatively, we rely on the reloaded `+` operator to compute the elementwise sum.
+(**Alternatively, we rely on the reloaded `+` operator to compute the elementwise sum.**)
 
 ```{.python .input}
 #@tab all
@@ -454,7 +454,7 @@ reducing the potential for errors.
 :label:`subsec_normal_distribution_and_squared_loss`
 
 While you can already get your hands dirty using only the information above,
-in the following we can more formally motivate the square loss objective
+in the following we can more formally motivate the squared loss objective
 via assumptions about the distribution of noise.
 
 Linear regression was invented by Gauss in 1795,
@@ -468,7 +468,7 @@ is given as
 
 $$p(x) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{1}{2 \sigma^2} (x - \mu)^2\right).$$
 
-Below we define a Python function to compute the normal distribution.
+Below [**we define a Python function to compute the normal distribution**].
 
 ```{.python .input}
 #@tab all
@@ -477,7 +477,7 @@ def normal(x, mu, sigma):
     return p * np.exp(-0.5 / sigma**2 * (x - mu)**2)
 ```
 
-We can now visualize the normal distributions.
+We can now (**visualize the normal distributions**).
 
 ```{.python .input}
 #@tab all
@@ -494,7 +494,7 @@ d2l.plot(x, [normal(x, mu, sigma) for mu, sigma in params], xlabel='x',
 As we can see, changing the mean corresponds to a shift along the $x$-axis,
 and increasing the variance spreads the distribution out, lowering its peak.
 
-One way to motivate linear regression with the mean squared error loss function (or simply square loss)
+One way to motivate linear regression with the mean squared error loss function (or simply squared loss)
 is to formally assume that observations arise from noisy observations,
 where the noise is normally distributed as follows:
 

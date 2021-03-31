@@ -89,8 +89,8 @@ when defining our own block,
 we only need to worry about parameters
 and the forward propagation function.
 
-To begin, we revisit the code
-that we used to implement MLPs
+[**To begin, we revisit the code
+that we used to implement MLPs**]
 (:numref:`sec_mlp_concise`).
 The following code generates a network
 with one fully-connected hidden layer
@@ -165,7 +165,7 @@ the `Block` class's `__call__` function.
 In this example, we constructed
 our model by instantiating an `nn.Sequential`, with layers in the order
 that they should be executed passed as arguments.
-In short, `nn.Sequential` defines a special kind of `Module`,
+In short, (**`nn.Sequential` defines a special kind of `Module`**),
 the class that presents a block in PyTorch.
 It maintains an ordered list of constituent `Module`s.
 Note that each of the two fully-connected layers is an instance of the `Linear` class
@@ -175,9 +175,7 @@ it chains each block in the list together,
 passing the output of each as the input to the next.
 Note that until now, we have been invoking our models
 via the construction `net(X)` to obtain their outputs.
-This is actually just shorthand for `net.forward(X)`,
-a slick Python trick achieved via
-the Block class's `__call__` function.
+This is actually just shorthand for `net.__call__(X)`.
 :end_tab:
 
 :begin_tab:`tensorflow`
@@ -199,7 +197,7 @@ a slick Python trick achieved via
 the Block class's `__call__` function.
 :end_tab:
 
-## A Custom Block
+## [**A Custom Block**]
 
 Perhaps the easiest way to develop intuition
 about how a block works
@@ -299,9 +297,9 @@ and training them on different data.
 Naturally, we would expect them
 to represent two different learned models.
 
-We instantiate the MLP's layers
+We [**instantiate the MLP's layers**]
 in the constructor
-and subsequently invoke these layers
+(**and subsequently invoke these layers**)
 on each call to the forward propagation function.
 Note a few key details.
 First, our customized `__init__` function
@@ -346,7 +344,7 @@ such as when addressing
 convolutional neural networks.
 
 
-## The Sequential Block
+## [**The Sequential Block**]
 
 We can now take a closer look
 at how the `Sequential` class works.
@@ -383,11 +381,11 @@ class MySequential(nn.Block):
 class MySequential(nn.Module):
     def __init__(self, *args):
         super().__init__()
-        for block in args:
-            # Here, `block` is an instance of a `Module` subclass. We save it
+        for idx, module in enumerate(args):
+            # Here, `module` is an instance of a `Module` subclass. We save it
             # in the member variable `_modules` of the `Module` class, and its
             # type is OrderedDict
-            self._modules[block] = block
+            self._modules[str(idx)] = module
 
     def forward(self, X):
         # OrderedDict guarantees that members will be traversed in the order
@@ -429,16 +427,16 @@ parameters also need to be initialized.
 :end_tab:
 
 :begin_tab:`pytorch`
-In the `__init__` method, we add every block
+In the `__init__` method, we add every module
 to the ordered dictionary `_modules` one by one.
 You might wonder why every `Module`
 possesses a `_modules` attribute
 and why we used it rather than just
 define a Python list ourselves.
 In short the chief advantage of `_modules`
-is that during our block's parameter initialization,
+is that during our module's parameter initialization,
 the system knows to look inside the `_modules`
-dictionary to find sub-blocks whose
+dictionary to find sub-modules whose
 parameters also need to be initialized.
 :end_tab:
 
@@ -476,7 +474,7 @@ for the `Sequential` class
 (as described in :numref:`sec_mlp_concise`).
 
 
-## Executing Code in the Forward Propagation Function
+## [**Executing Code in the Forward Propagation Function**]
 
 The `Sequential` class makes model construction easy,
 allowing us to assemble new architectures
@@ -616,8 +614,8 @@ net = FixedHiddenMLP()
 net(X)
 ```
 
-We can mix and match various
-ways of assembling blocks together.
+We can [**mix and match various
+ways of assembling blocks together.**]
 In the following example, we nest blocks
 in some creative ways.
 

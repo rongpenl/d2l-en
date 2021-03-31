@@ -100,7 +100,7 @@ Even higher layers might represent whole objects
 like people, airplanes, dogs, or frisbees.
 Ultimately, the final hidden state learns a compact representation
 of the image that summarizes its contents
-such that data belonging to different categories be separated easily.
+such that data belonging to different categories can be easily separated.
 
 While the ultimate breakthrough for many-layered CNNs
 came in 2012, a core group of researchers had dedicated themselves
@@ -413,7 +413,7 @@ for layer in net:
 X = torch.randn(1, 1, 224, 224)
 for layer in net:
     X=layer(X)
-    print(layer.__class__.__name__,'Output shape:\t',X.shape)
+    print(layer.__class__.__name__,'output shape:\t',X.shape)
 ```
 
 ```{.python .input}
@@ -421,7 +421,7 @@ for layer in net:
 X = tf.random.uniform((1, 224, 224, 1))
 for layer in net().layers:
     X = layer(X)
-    print(layer.__class__.__name__, 'Output shape:\t', X.shape)
+    print(layer.__class__.__name__, 'output shape:\t', X.shape)
 ```
 
 ## Reading the Dataset
@@ -454,7 +454,7 @@ the higher image resolution, and the more costly convolutions.
 ```{.python .input}
 #@tab all
 lr, num_epochs = 0.01, 10
-d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ## Summary

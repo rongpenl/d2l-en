@@ -77,7 +77,7 @@ the resulting minibatch
 has zero mean and unit variance.
 Because the choice of unit variance
 (vs. some other magic number) is an arbitrary choice,
-we commonly include element-wise
+we commonly include elementwise
 *scale parameter* $\boldsymbol{\gamma}$ and *shift parameter* $\boldsymbol{\beta}$
 that have the same shape as $\mathbf{x}$.
 Note that $\boldsymbol{\gamma}$ and $\boldsymbol{\beta}$ are
@@ -292,7 +292,7 @@ from d2l import tensorflow as d2l
 import tensorflow as tf
 
 def batch_norm(X, gamma, beta, moving_mean, moving_var, eps):
-    # Compute reciprocal of square root of the moving variance element-wise
+    # Compute reciprocal of square root of the moving variance elementwise
     inv = tf.cast(tf.math.rsqrt(moving_var + eps), X.dtype)
     # Scale and shift
     inv *= gamma
@@ -337,9 +337,9 @@ class BatchNorm(nn.Block):
         # initialized to 1 and 0, respectively
         self.gamma = self.params.get('gamma', shape=shape, init=init.One())
         self.beta = self.params.get('beta', shape=shape, init=init.Zero())
-        # The variables that are not model parameters are initialized to 0
+        # The variables that are not model parameters are initialized to 0 and 1
         self.moving_mean = np.zeros(shape)
-        self.moving_var = np.zeros(shape)
+        self.moving_var = np.ones(shape)
 
     def forward(self, X):
         # If `X` is not on the main memory, copy `moving_mean` and
@@ -370,9 +370,9 @@ class BatchNorm(nn.Module):
         # initialized to 1 and 0, respectively
         self.gamma = nn.Parameter(torch.ones(shape))
         self.beta = nn.Parameter(torch.zeros(shape))
-        # The variables that are not model parameters are initialized to 0
+        # The variables that are not model parameters are initialized to 0 and 1
         self.moving_mean = torch.zeros(shape)
-        self.moving_var = torch.zeros(shape)
+        self.moving_var = torch.ones(shape)
 
     def forward(self, X):
         # If `X` is not on the main memory, copy `moving_mean` and
@@ -406,7 +406,7 @@ class BatchNorm(tf.keras.layers.Layer):
             shape=weight_shape, initializer=tf.initializers.zeros,
             trainable=False)
         self.moving_variance = self.add_weight(name='moving_variance',
-            shape=weight_shape, initializer=tf.initializers.zeros,
+            shape=weight_shape, initializer=tf.initializers.ones,
             trainable=False)
         super(BatchNorm, self).build(input_shape)
 
@@ -512,14 +512,14 @@ The main difference is the considerably larger learning rate.
 #@tab mxnet, pytorch
 lr, num_epochs, batch_size = 1.0, 10, 256
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
-d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ```{.python .input}
 #@tab tensorflow
 lr, num_epochs, batch_size = 1.0, 10, 256
 train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
-net = d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+net = d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 Let us have a look at the scale parameter `gamma`
@@ -610,7 +610,7 @@ while our custom implementation must be interpreted by Python.
 
 ```{.python .input}
 #@tab all
-d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr)
+d2l.train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ## Controversy

@@ -41,9 +41,9 @@ that Yann and his colleague Leon Bottou wrote in the 1990s!
 
 ## LeNet
 
-At a high level, LeNet (LeNet-5) consists of two parts:
+At a high level, (**LeNet (LeNet-5) consists of two parts:
 (i) a convolutional encoder consisting of two convolutional layers; and
-(ii) a dense block consisting of three fully-connected layers;
+(ii) a dense block consisting of three fully-connected layers**);
 The architecture is summarized in :numref:`img_lenet`.
 
 ![Data flow in LeNet. The input is a handwritten digit, the output a probability over 10 possible outcomes.](../img/lenet.svg)
@@ -133,7 +133,6 @@ net = torch.nn.Sequential(
 #@tab tensorflow
 from d2l import tensorflow as d2l
 import tensorflow as tf
-from tensorflow.distribute import MirroredStrategy, OneDeviceStrategy
 
 def net():
     return tf.keras.models.Sequential([
@@ -157,7 +156,7 @@ the original LeNet-5 architecture.
 By passing a single-channel (black and white)
 $28 \times 28$ image through the network
 and printing the output shape at each layer,
-we can inspect the model to make sure
+we can [**inspect the model**] to make sure
 that its operations line up with
 what we expect from :numref:`img_lenet_vert`.
 
@@ -174,7 +173,7 @@ for layer in net:
 
 ```{.python .input}
 #@tab pytorch
-X = torch.randn(size=(1, 1, 28, 28), dtype=torch.float32)
+X = torch.rand(size=(1, 1, 28, 28), dtype=torch.float32)
 for layer in net:
     X = layer(X)
     print(layer.__class__.__name__,'output shape: \t',X.shape)
@@ -210,7 +209,7 @@ matches the number of classes.
 ## Training
 
 Now that we have implemented the model,
-let us run an experiment to see how LeNet fares on Fashion-MNIST.
+let us [**run an experiment to see how LeNet fares on Fashion-MNIST**].
 
 ```{.python .input}
 #@tab all
@@ -227,8 +226,8 @@ If you have access to a GPU, this might be a good time
 to put it into action to speed up training.
 
 :begin_tab:`mxnet, pytorch`
-For evaluation, we need to make a slight modification
-to the `evaluate_accuracy` function that we described
+For evaluation, we need to [**make a slight modification
+to the `evaluate_accuracy` function**] that we described
 in :numref:`sec_softmax_scratch`.
 Since the full dataset is in the main memory,
 we need to copy it to the GPU memory before the model uses GPU to compute with the dataset.
@@ -251,18 +250,24 @@ def evaluate_accuracy_gpu(net, data_iter, device=None):  #@save
 #@tab pytorch
 def evaluate_accuracy_gpu(net, data_iter, device=None): #@save
     """Compute the accuracy for a model on a dataset using a GPU."""
-    net.eval()  # Set the model to evaluation mode
-    if not device:
-        device = next(iter(net.parameters())).device
+    if isinstance(net, torch.nn.Module):
+        net.eval()  # Set the model to evaluation mode
+        if not device:
+            device = next(iter(net.parameters())).device
     # No. of correct predictions, no. of predictions
     metric = d2l.Accumulator(2)
     for X, y in data_iter:
-        X, y = X.to(device), y.to(device)
+        if isinstance(X, list):
+            # Required for BERT Fine-tuning (to be covered later)
+            X = [x.to(device) for x in X]
+        else:
+            X = X.to(device)
+        y = y.to(device)
         metric.add(d2l.accuracy(net(X), y), d2l.size(y))
     return metric[0] / metric[1]
 ```
 
-We also need to update our training function to deal with GPUs.
+We also need to [**update our training function to deal with GPUs.**]
 Unlike the `train_epoch_ch3` defined in :numref:`sec_softmax_scratch`,
 we now need to move each minibatch of data
 to our designated device (hopefully, the GPU)
@@ -283,8 +288,7 @@ we visualize the training loss more frequently.
 
 ```{.python .input}
 #@save
-def train_ch6(net, train_iter, test_iter, num_epochs, lr,
-              device=d2l.try_gpu()):
+def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
     """Train a model with a GPU (defined in Chapter 6)."""
     net.initialize(force_reinit=True, ctx=device, init=init.Xavier())
     loss = gluon.loss.SoftmaxCrossEntropyLoss()
@@ -323,12 +327,11 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr,
 ```{.python .input}
 #@tab pytorch
 #@save
-def train_ch6(net, train_iter, test_iter, num_epochs, lr,
-              device=d2l.try_gpu()):
+def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
     """Train a model with a GPU (defined in Chapter 6)."""
     def init_weights(m):
         if type(m) == nn.Linear or type(m) == nn.Conv2d:
-            torch.nn.init.xavier_uniform_(m.weight)
+            nn.init.xavier_uniform_(m.weight)
     net.apply(init_weights)
     print('training on', device)
     net.to(device)
@@ -340,9 +343,9 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr,
     for epoch in range(num_epochs):
         # Sum of training loss, sum of training accuracy, no. of examples
         metric = d2l.Accumulator(3)
+        net.train()
         for i, (X, y) in enumerate(train_iter):
             timer.start()
-            net.train()
             optimizer.zero_grad()
             X, y = X.to(device), y.to(device)
             y_hat = net(X)
@@ -352,8 +355,8 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr,
             with torch.no_grad():
                 metric.add(l * X.shape[0], d2l.accuracy(y_hat, y), X.shape[0])
             timer.stop()
-            train_l = metric[0]/metric[2]
-            train_acc = metric[1]/metric[2]
+            train_l = metric[0] / metric[2]
+            train_acc = metric[1] / metric[2]
             if (i + 1) % (num_batches // 5) == 0 or i == num_batches - 1:
                 animator.add(epoch + (i + 1) / num_batches,
                              (train_l, train_acc, None))
@@ -397,8 +400,7 @@ class TrainCallback(tf.keras.callbacks.Callback):  #@save
                   f'{str(self.device_name)}')
 
 #@save
-def train_ch6(net_fn, train_iter, test_iter, num_epochs, lr,
-              device=d2l.try_gpu()):
+def train_ch6(net_fn, train_iter, test_iter, num_epochs, lr, device):
     """Train a model with a GPU (defined in Chapter 6)."""
     device_name = device._device_name
     strategy = tf.distribute.OneDeviceStrategy(device_name)
@@ -413,12 +415,12 @@ def train_ch6(net_fn, train_iter, test_iter, num_epochs, lr,
     return net
 ```
 
-Now let us train and evaluate the LeNet-5 model.
+[**Now let us train and evaluate the LeNet-5 model.**]
 
 ```{.python .input}
 #@tab all
 lr, num_epochs = 0.9, 10
-train_ch6(net, train_iter, test_iter, num_epochs, lr)
+train_ch6(net, train_iter, test_iter, num_epochs, lr, d2l.try_gpu())
 ```
 
 ## Summary
